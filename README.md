@@ -1,7 +1,7 @@
 # Sistema-Gestion-de-Clinica-general
 Es un siste de gestion y administracion de un a clinica medica 
 
-# Medic-ON — Frontend Sistema de Gestión Médica
+# Medic-ON — Frontend y Backend Sistema de Gestión Médica
 
 ## Estructura del proyecto
 
