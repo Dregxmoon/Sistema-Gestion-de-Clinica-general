@@ -436,7 +436,7 @@ function renderPacientes() {
     p.telefono,
     `<span class="${p.sexo==='F'?'text-pink-600':'text-sky-600'} font-medium">${p.sexo==='F'?'Femenino':'Masculino'}</span>`,
     p.fecha_nac,
-    `<div class="flex gap-1">${btnEdit(`editPaciente(${p.id})`)}${btnDelete(`deletePaciente(${p.id})`)}  </div>`,
+    `<div class="flex gap-1">${btnEdit(`editPaciente(${p.id})`)}${btnDelete(`deletePaciente(${p.id})`)}<button class="btn-icon-sm text-violet-600 hover:bg-violet-50" onclick="verRiesgoPaciente(${p.id})" title="Perfil predictivo">🧠</button></div>`,
   ]);
   return sectionHeader("Pacientes","Registro de pacientes del sistema","Nuevo paciente","newPaciente()","🧑‍⚕️")
     + `<div class="mb-4 relative">
@@ -459,7 +459,7 @@ window.newPaciente = function() {
     const em = document.getElementById("p-email").value.trim();
     if (!n || !doc) return showToast("Nombre y documento son obligatorios","error");
     if (DB.pacientes.find(x=>x.documento===doc)) return showToast("Documento ya registrado","error");
-    DB.pacientes.push({id:DB.nextId.pacientes++, nombre:n, documento:doc, telefono:tel, sexo:sx, fecha_nac:fn, email:em});
+    DB.pacientes.push({id:DB.nextId.pacientes++, nombre:n, documento:doc, telefono:tel, sexo:sx, fecha_nac:fn, email:em, antecedentes:[], medicamentos:[], historial_consultas:[]});
     logAction(`Registró paciente: ${n}`);
     closeModal(); navigate("pacientes"); showToast("Paciente registrado");
   });
@@ -500,6 +500,49 @@ function formPaciente(p={}) {
   </div>`;
 }
 
+
+
+window.verRiesgoPaciente = function(id) {
+  const p = DB.pacientes.find(x=>x.id===id);
+  const historial = DB.citas.filter(c=>c.paciente_id===id && c.estado==="FINALIZADA").slice(-10);
+  const alertas = generarAlertasPredictivas(id);
+  const html = `
+    <div class="space-y-4 text-sm">
+      <div><b>Paciente:</b> ${p.nombre}</div>
+      <div><b>Antecedentes:</b> ${(p.antecedentes||[]).join(", ") || "Sin registro"}</div>
+      <div><b>Medicamentos base:</b> ${(p.medicamentos||[]).join(", ") || "Sin registro"}</div>
+      <div>
+        <b>Historial reciente:</b>
+        <ul class="list-disc ml-5 mt-1 text-slate-600">
+          ${historial.map(c=>`<li>${c.fecha} ${c.hora} · ${c.motivo}</li>`).join("") || "<li>Sin consultas finalizadas</li>"}
+        </ul>
+      </div>
+      <div>
+        <b>Alertas predictivas:</b>
+        <ul class="list-disc ml-5 mt-1">
+          ${alertas.map(a=>`<li class="${a.nivel==='critica'?'text-red-600':'text-amber-600'}"><b>${a.nivel.toUpperCase()}</b>: ${a.descripcion}</li>`).join("") || '<li class="text-emerald-600">Sin alertas activas</li>'}
+        </ul>
+      </div>
+    </div>`;
+  openModal("Perfil predictivo del paciente", html, () => closeModal());
+};
+
+function generarAlertasPredictivas(pacienteId) {
+  const historial = DB.citas.filter(c=>c.paciente_id===pacienteId && c.estado==='FINALIZADA');
+  const sintomas = historial.flatMap(c => c.sintomas_ids || []);
+  const alerts = DB.patrones_riesgo.flatMap(patron => {
+    const hits = sintomas.filter(id => patron.sintomas_ids.includes(id)).length;
+    if (hits < patron.frecuencia_umbral) return [];
+    return [{
+      paciente_id: pacienteId,
+      patron_id: patron.id,
+      nivel: patron.nivel_alerta,
+      descripcion: `${patron.nombre}: ${patron.enfermedad_probable} (${hits} coincidencias)`
+    }];
+  });
+  DB.alertas_predictivas = DB.alertas_predictivas.filter(a=>a.paciente_id!==pacienteId).concat(alerts);
+  return alerts;
+}
 // ══════════════════════════════════════════════
 // CITAS
 // ══════════════════════════════════════════════
@@ -568,8 +611,11 @@ window.cambiarFecha = function(offset) {
 };
 window.finalizarCita = function(id) {
   const c = DB.citas.find(x=>x.id===id);
+  const sintomas = prompt("IDs de síntomas separados por coma (catálogo: 1 Fiebre, 2 Tos, 3 Dolor pecho, 4 Dificultad respiratoria, 5 Dolor cabeza)","1,2");
+  c.sintomas_ids = (sintomas||"").split(",").map(x=>parseInt(x.trim())).filter(Boolean);
   c.estado = "FINALIZADA";
-  logAction(`Finalizó cita #${id}`);
+  generarAlertasPredictivas(c.paciente_id);
+  logAction(`Finalizó cita #${id} con síntomas: ${c.sintomas_ids.join(",") || "ninguno"}`);
   renderPage("citas"); showToast("Cita finalizada","success");
 };
 window.cancelarCita = function(id) {
