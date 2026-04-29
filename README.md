@@ -215,3 +215,16 @@ Cuentas demo del frontend:
 - Luka Torres
 - Supervisora: Dra. Martha Elena Pulido
 - Instituto Tecnológico de Tijuana
+
+
+## Integración real con SQL Server
+
+La API ya consume información clínica real de SQL Server (pacientes, consultas, síntomas y patrones de riesgo) usando SQLAlchemy sobre `mssql+pyodbc`.
+
+Cadena recomendada para ambiente local:
+
+```env
+DATABASE_URL=mssql+pyodbc://sa:YourStrong!Passw0rd@localhost/SistemaMedico?driver=ODBC+Driver+18+for+SQL+Server&TrustServerCertificate=yes
+```
+
+Para ambientes corporativos, usa usuario técnico dedicado, TLS válido y segmentación de red.
