@@ -457,9 +457,10 @@ window.newPaciente = function() {
     const sx = document.getElementById("p-sexo").value;
     const fn = document.getElementById("p-fn").value;
     const em = document.getElementById("p-email").value.trim();
+    const al = document.getElementById("p-alergias").value.trim();
     if (!n || !doc) return showToast("Nombre y documento son obligatorios","error");
     if (DB.pacientes.find(x=>x.documento===doc)) return showToast("Documento ya registrado","error");
-    DB.pacientes.push({id:DB.nextId.pacientes++, nombre:n, documento:doc, telefono:tel, sexo:sx, fecha_nac:fn, email:em, antecedentes:[], medicamentos:[], historial_consultas:[]});
+    DB.pacientes.push({id:DB.nextId.pacientes++, nombre:n, documento:doc, telefono:tel, sexo:sx, fecha_nac:fn, email:em, alergias:al, antecedentes:[], medicamentos:[], historial_consultas:[]});
     logAction(`Registró paciente: ${n}`);
     closeModal(); navigate("pacientes"); showToast("Paciente registrado");
   });
@@ -473,6 +474,7 @@ window.editPaciente = function(id) {
     p.sexo      = document.getElementById("p-sexo").value;
     p.fecha_nac = document.getElementById("p-fn").value;
     p.email     = document.getElementById("p-email").value.trim();
+    p.alergias  = document.getElementById("p-alergias").value.trim();
     logAction(`Editó paciente: ${p.nombre}`);
     closeModal(); navigate("pacientes"); showToast("Paciente actualizado");
   });
@@ -497,6 +499,7 @@ function formPaciente(p={}) {
       ${field("Fecha nacimiento", input("p-fn","date","", p.fecha_nac||""))}
       ${field("Email",            input("p-email","email","correo@ejemplo.com", p.email||""))}
     </div>
+    ${field("Alergias", textarea("p-alergias","Alergias conocidas del paciente", p.alergias||""))}
   </div>`;
 }
 
@@ -511,10 +514,11 @@ window.verRiesgoPaciente = function(id) {
       <div><b>Paciente:</b> ${p.nombre}</div>
       <div><b>Antecedentes:</b> ${(p.antecedentes||[]).join(", ") || "Sin registro"}</div>
       <div><b>Medicamentos base:</b> ${(p.medicamentos||[]).join(", ") || "Sin registro"}</div>
+      <div><b>Alergias:</b> ${p.alergias || "Sin alergias registradas"}</div>
       <div>
         <b>Historial reciente:</b>
         <ul class="list-disc ml-5 mt-1 text-slate-600">
-          ${historial.map(c=>`<li>${c.fecha} ${c.hora} · ${c.motivo}</li>`).join("") || "<li>Sin consultas finalizadas</li>"}
+          ${(p.historial_consultas || []).slice(-8).reverse().map(h=>`<li>${h.fecha} · ${h.motivo}. Síntomas: ${h.sintomas_texto || "—"} (${h.duracion || "sin duración"})</li>`).join("") || "<li>Sin consultas finalizadas</li>"}
         </ul>
       </div>
       <div>
@@ -611,13 +615,51 @@ window.cambiarFecha = function(offset) {
 };
 window.finalizarCita = function(id) {
   const c = DB.citas.find(x=>x.id===id);
-  const sintomas = prompt("IDs de síntomas separados por coma (catálogo: 1 Fiebre, 2 Tos, 3 Dolor pecho, 4 Dificultad respiratoria, 5 Dolor cabeza)","1,2");
-  c.sintomas_ids = (sintomas||"").split(",").map(x=>parseInt(x.trim())).filter(Boolean);
-  c.estado = "FINALIZADA";
-  generarAlertasPredictivas(c.paciente_id);
-  logAction(`Finalizó cita #${id} con síntomas: ${c.sintomas_ids.join(",") || "ninguno"}`);
-  renderPage("citas"); showToast("Cita finalizada","success");
+  const paciente = DB.pacientes.find(p=>p.id===c.paciente_id);
+  openModal("Consulta médica", formConsultaMedica(c, paciente), () => {
+    const sintomasIds = Array.from(document.querySelectorAll("input[name='consulta-sintoma']:checked")).map(el => parseInt(el.value));
+    const fechaInicio = document.getElementById("cm-fecha-inicio").value;
+    const duracion = document.getElementById("cm-duracion").value.trim();
+    const alergias = document.getElementById("cm-alergias").value.trim();
+    const antecedentes = document.getElementById("cm-antecedentes").value.trim();
+    const notas = document.getElementById("cm-notas").value.trim();
+    if (!sintomasIds.length) return showToast("Selecciona al menos un síntoma","error");
+
+    c.sintomas_ids = sintomasIds;
+    c.estado = "FINALIZADA";
+    paciente.alergias = alergias;
+    if (antecedentes) paciente.antecedentes = antecedentes.split(",").map(x=>x.trim()).filter(Boolean);
+    paciente.historial_consultas = paciente.historial_consultas || [];
+    paciente.historial_consultas.push({
+      fecha: `${c.fecha} ${c.hora}`,
+      motivo: c.motivo,
+      sintomas_ids: sintomasIds,
+      sintomas_texto: sintomasIds.map(id => DB.sintomas_catalogo.find(s=>s.id===id)?.nombre).filter(Boolean).join(", "),
+      fecha_inicio: fechaInicio,
+      duracion,
+      notas,
+      medico: getMedicoNombre(c.medico_id),
+    });
+
+    generarAlertasPredictivas(c.paciente_id);
+    logAction(`Finalizó consulta #${id} y guardó historial clínico`);
+    closeModal(); renderPage("citas"); showToast("Consulta finalizada y guardada","success");
+  });
 };
+
+function formConsultaMedica(c, paciente) {
+  return `<div class="grid gap-4">
+    <div class="text-xs text-slate-500">Paciente: <b>${paciente.nombre}</b> · Cita: <b>${c.fecha} ${c.hora}</b></div>
+    ${field("Síntomas actuales", `<div class="grid grid-cols-1 gap-2">${DB.sintomas_catalogo.map(s=>`<label class="flex items-center gap-2"><input type="checkbox" name="consulta-sintoma" value="${s.id}" class="accent-sky-500"> ${s.nombre} <span class="text-xs text-slate-400">(${s.categoria})</span></label>`).join("")}</div>`, true)}
+    <div class="grid grid-cols-2 gap-4">
+      ${field("Fecha de inicio síntomas", input("cm-fecha-inicio","date","", c.fecha), true)}
+      ${field("Duración estimada", input("cm-duracion","text","Ej. 3 días", ""), true)}
+    </div>
+    ${field("Alergias", textarea("cm-alergias","Ej. penicilina, ibuprofeno", paciente.alergias||""))}
+    ${field("Antecedentes relevantes", textarea("cm-antecedentes","Separar por comas", (paciente.antecedentes||[]).join(", ")))}
+    ${field("Nota médica / plan", textarea("cm-notas","Evolución, impresión diagnóstica, indicaciones", ""))}
+  </div>`;
+}
 window.cancelarCita = function(id) {
   confirmDialog("¿Cancelar esta cita?", () => {
     DB.citas.find(x=>x.id===id).estado = "CANCELADA";

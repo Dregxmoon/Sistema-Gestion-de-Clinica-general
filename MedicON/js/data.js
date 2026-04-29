@@ -43,12 +43,12 @@ const DB = {
   ],
 
   pacientes: [
-    { id: 1, nombre: "María López",       documento: "LOPM850312ABC", telefono: "664-300-0001", sexo: "F", fecha_nac: "1985-03-12", email: "maria@email.com", antecedentes:["Hipertensión controlada"], medicamentos:["Losartán 50mg"], historial_consultas: [] },
-    { id: 2, nombre: "José Ramírez",      documento: "RAJJ900518XYZ", telefono: "664-300-0002", sexo: "M", fecha_nac: "1990-05-18", email: "jose@email.com" },
-    { id: 3, nombre: "Elena Torres",      documento: "TOEE951120DEF", telefono: "664-300-0003", sexo: "F", fecha_nac: "1995-11-20", email: "elena@email.com" },
-    { id: 4, nombre: "Roberto Sánchez",   documento: "SARR880704GHI", telefono: "664-300-0004", sexo: "M", fecha_nac: "1988-07-04", email: "roberto@email.com" },
-    { id: 5, nombre: "Patricia Morales",  documento: "MOPA700815JKL", telefono: "664-300-0005", sexo: "F", fecha_nac: "1970-08-15", email: "patricia@email.com" },
-    { id: 6, nombre: "Diego Hernández",   documento: "HEDD020930MNO", telefono: "664-300-0006", sexo: "M", fecha_nac: "2002-09-30", email: "diego@email.com", antecedentes:[], medicamentos:[], historial_consultas: [] },
+    { id: 1, nombre: "María López",       documento: "LOPM850312ABC", telefono: "664-300-0001", sexo: "F", fecha_nac: "1985-03-12", email: "maria@email.com", alergias: "Penicilina", antecedentes:["Hipertensión controlada"], medicamentos:["Losartán 50mg"], historial_consultas: [] },
+    { id: 2, nombre: "José Ramírez",      documento: "RAJJ900518XYZ", telefono: "664-300-0002", sexo: "M", fecha_nac: "1990-05-18", email: "jose@email.com", alergias: "", antecedentes:[], medicamentos:[], historial_consultas: [] },
+    { id: 3, nombre: "Elena Torres",      documento: "TOEE951120DEF", telefono: "664-300-0003", sexo: "F", fecha_nac: "1995-11-20", email: "elena@email.com", alergias: "", antecedentes:[], medicamentos:[], historial_consultas: [] },
+    { id: 4, nombre: "Roberto Sánchez",   documento: "SARR880704GHI", telefono: "664-300-0004", sexo: "M", fecha_nac: "1988-07-04", email: "roberto@email.com", alergias: "", antecedentes:[], medicamentos:[], historial_consultas: [] },
+    { id: 5, nombre: "Patricia Morales",  documento: "MOPA700815JKL", telefono: "664-300-0005", sexo: "F", fecha_nac: "1970-08-15", email: "patricia@email.com", alergias: "Ácido acetilsalicílico", antecedentes:["Asma"], medicamentos:["Salbutamol inhalado"], historial_consultas: [] },
+    { id: 6, nombre: "Diego Hernández",   documento: "HEDD020930MNO", telefono: "664-300-0006", sexo: "M", fecha_nac: "2002-09-30", email: "diego@email.com", alergias: "", antecedentes:[], medicamentos:[], historial_consultas: [] },
   ],
 
   sintomas_catalogo: [
