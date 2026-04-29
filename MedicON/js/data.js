@@ -43,12 +43,27 @@ const DB = {
   ],
 
   pacientes: [
-    { id: 1, nombre: "María López",       documento: "LOPM850312ABC", telefono: "664-300-0001", sexo: "F", fecha_nac: "1985-03-12", email: "maria@email.com", alergias: "Penicilina", antecedentes:["Hipertensión controlada"], medicamentos:["Losartán 50mg"], historial_consultas: [] },
-    { id: 2, nombre: "José Ramírez",      documento: "RAJJ900518XYZ", telefono: "664-300-0002", sexo: "M", fecha_nac: "1990-05-18", email: "jose@email.com", alergias: "", antecedentes:[], medicamentos:[], historial_consultas: [] },
-    { id: 3, nombre: "Elena Torres",      documento: "TOEE951120DEF", telefono: "664-300-0003", sexo: "F", fecha_nac: "1995-11-20", email: "elena@email.com", alergias: "", antecedentes:[], medicamentos:[], historial_consultas: [] },
-    { id: 4, nombre: "Roberto Sánchez",   documento: "SARR880704GHI", telefono: "664-300-0004", sexo: "M", fecha_nac: "1988-07-04", email: "roberto@email.com", alergias: "", antecedentes:[], medicamentos:[], historial_consultas: [] },
-    { id: 5, nombre: "Patricia Morales",  documento: "MOPA700815JKL", telefono: "664-300-0005", sexo: "F", fecha_nac: "1970-08-15", email: "patricia@email.com", alergias: "Ácido acetilsalicílico", antecedentes:["Asma"], medicamentos:["Salbutamol inhalado"], historial_consultas: [] },
-    { id: 6, nombre: "Diego Hernández",   documento: "HEDD020930MNO", telefono: "664-300-0006", sexo: "M", fecha_nac: "2002-09-30", email: "diego@email.com", alergias: "", antecedentes:[], medicamentos:[], historial_consultas: [] },
+    { id: 1, nombre: "María López",       documento: "LOPM850312ABC", telefono: "664-300-0001", sexo: "F", fecha_nac: "1985-03-12", email: "maria@email.com", alergias: "Penicilina", antecedentes:["Hipertensión controlada"], medicamentos:["Losartán 50mg"], historial_consultas: [
+      { fecha: today(-60), motivo: "Control de hipertensión", sintomas_ids:[5], sintomas_texto: "Dolor de cabeza", duracion: "4 días", diagnostico: "Cefalea tensional asociada a estrés", tratamiento: "Paracetamol 500mg c/8h por 3 días + hidratación", notas: "Monitorear presión arterial en casa" },
+      { fecha: today(-20), motivo: "Palpitaciones y disnea leve", sintomas_ids:[3,4], sintomas_texto: "Dolor de pecho, Dificultad respiratoria", duracion: "2 días", diagnostico: "Angina estable probable", tratamiento: "Ajuste de antihipertensivo y ECG de control", notas: "Requiere seguimiento cardiológico" },
+    ] },
+    { id: 2, nombre: "José Ramírez",      documento: "RAJJ900518XYZ", telefono: "664-300-0002", sexo: "M", fecha_nac: "1990-05-18", email: "jose@email.com", alergias: "", antecedentes:["Tabaquismo social"], medicamentos:[], historial_consultas: [
+      { fecha: today(-35), motivo: "Infección respiratoria", sintomas_ids:[1,2], sintomas_texto: "Fiebre, Tos", duracion: "5 días", diagnostico: "Faringitis viral aguda", tratamiento: "Reposo, hidratación y antipirético", notas: "Sin datos de alarma" },
+    ] },
+    { id: 3, nombre: "Elena Torres",      documento: "TOEE951120DEF", telefono: "664-300-0003", sexo: "F", fecha_nac: "1995-11-20", email: "elena@email.com", alergias: "", antecedentes:["Migraña episódica"], medicamentos:["Sumatriptán SOS"], historial_consultas: [] },
+    { id: 4, nombre: "Roberto Sánchez",   documento: "SARR880704GHI", telefono: "664-300-0004", sexo: "M", fecha_nac: "1988-07-04", email: "roberto@email.com", alergias: "", antecedentes:["Rinitis alérgica"], medicamentos:["Loratadina 10mg"], historial_consultas: [] },
+    { id: 5, nombre: "Patricia Morales",  documento: "MOPA700815JKL", telefono: "664-300-0005", sexo: "F", fecha_nac: "1970-08-15", email: "patricia@email.com", alergias: "Ácido acetilsalicílico", antecedentes:["Asma"], medicamentos:["Salbutamol inhalado"], historial_consultas: [
+      { fecha: today(-40), motivo: "Exacerbación asmática", sintomas_ids:[2,4], sintomas_texto: "Tos, Dificultad respiratoria", duracion: "3 días", diagnostico: "Asma persistente con crisis leve", tratamiento: "Broncodilatador de rescate y esteroide inhalado", notas: "Evitar desencadenantes ambientales" },
+    ] },
+    { id: 6, nombre: "Diego Hernández",   documento: "HEDD020930MNO", telefono: "664-300-0006", sexo: "M", fecha_nac: "2002-09-30", email: "diego@email.com", alergias: "", antecedentes:["Sobrepeso"], medicamentos:[], historial_consultas: [] },
+    { id: 7, nombre: "Camila Navarro",    documento: "NACC980214PQR", telefono: "664-300-0007", sexo: "F", fecha_nac: "1998-02-14", email: "camila@email.com", alergias: "Sulfas", antecedentes:["Hipotiroidismo"], medicamentos:["Levotiroxina 50mcg"], historial_consultas: [
+      { fecha: today(-45), motivo: "Fiebre y tos nocturna", sintomas_ids:[1,2], sintomas_texto: "Fiebre, Tos", duracion: "6 días", diagnostico: "Bronquitis aguda", tratamiento: "Antitérmico y control en 72 horas", notas: "Mejoría parcial al tercer día" },
+      { fecha: today(-12), motivo: "Persistencia de tos", sintomas_ids:[2,4], sintomas_texto: "Tos, Dificultad respiratoria", duracion: "10 días", diagnostico: "Hiperreactividad bronquial posinfecciosa", tratamiento: "Esteroide inhalado por 14 días", notas: "Revisar función pulmonar si persiste" },
+    ] },
+    { id: 8, nombre: "Fernando Ibarra",   documento: "IAFF760922STU", telefono: "664-300-0008", sexo: "M", fecha_nac: "1976-09-22", email: "fernando@email.com", alergias: "", antecedentes:["Diabetes mellitus tipo 2","Dislipidemia"], medicamentos:["Metformina 850mg c/12h","Atorvastatina 20mg nocturna"], historial_consultas: [
+      { fecha: today(-70), motivo: "Control metabólico", sintomas_ids:[5], sintomas_texto: "Dolor de cabeza", duracion: "2 días", diagnostico: "Descontrol glucémico leve", tratamiento: "Ajuste dietético y ejercicio", notas: "Solicitar HbA1c en siguiente consulta" },
+      { fecha: today(-18), motivo: "Opresión torácica al esfuerzo", sintomas_ids:[3,4], sintomas_texto: "Dolor de pecho, Dificultad respiratoria", duracion: "1 día", diagnostico: "Probable angina de esfuerzo", tratamiento: "Referencia a cardiología + prueba de esfuerzo", notas: "Acudir a urgencias si dolor en reposo" },
+    ] },
   ],
 
   sintomas_catalogo: [
@@ -75,6 +90,10 @@ const DB = {
     { id: 6, paciente_id: 6, medico_id: 2, fecha: today(1),  hora: "16:00", motivo: "Electrocardiograma",   estado: "PENDIENTE"  },
     { id: 7, paciente_id: 1, medico_id: 3, fecha: today(-3), hora: "10:00", motivo: "Fiebre infantil",      estado: "FINALIZADA" },
     { id: 8, paciente_id: 2, medico_id: 1, fecha: today(-2), hora: "12:00", motivo: "Gripe",                estado: "CANCELADA"  },
+    { id: 9, paciente_id: 7, medico_id: 1, fecha: today(-12), hora: "09:30", motivo: "Tos persistente y fatiga", estado: "FINALIZADA", sintomas_ids:[2,4] },
+    { id: 10, paciente_id: 8, medico_id: 2, fecha: today(-18), hora: "11:30", motivo: "Opresión torácica al esfuerzo", estado: "FINALIZADA", sintomas_ids:[3,4] },
+    { id: 11, paciente_id: 7, medico_id: 1, fecha: today(2), hora: "10:00", motivo: "Seguimiento respiratorio", estado: "PENDIENTE" },
+    { id: 12, paciente_id: 8, medico_id: 2, fecha: today(3), hora: "13:30", motivo: "Control cardiometabólico", estado: "PENDIENTE" },
   ],
 
   bitacora: [
@@ -86,7 +105,7 @@ const DB = {
     { id: 6, usuario: "admin",     accion: "Modificó sucursal Otay",     fecha: datetime(-1.5)  },
   ],
 
-  nextId: { usuarios: 6, sucursales: 4, especialidades: 6, medicos: 6, pacientes: 7, citas: 9, bitacora: 7, horarios: 5 },
+  nextId: { usuarios: 6, sucursales: 4, especialidades: 6, medicos: 6, pacientes: 9, citas: 13, bitacora: 7, horarios: 5 },
 };
 
 // Helpers para fechas relativas
