@@ -93,6 +93,9 @@ def _build_candidates() -> list[SqlServerCandidate]:
     return candidates
 
 
+REQUIRED_TABLES = ("pacientes", "consultas", "consulta_sintomas", "sintomas_catalogo", "patrones_riesgo")
+
+
 def _can_connect(database_url: str) -> bool:
     if not database_url:
         return False
@@ -101,6 +104,15 @@ def _can_connect(database_url: str) -> bool:
         engine = create_engine(database_url, pool_pre_ping=True, future=True)
         with engine.connect() as conn:
             conn.execute(text("SELECT 1"))
+            for table_name in REQUIRED_TABLES:
+                exists_query = text("""
+                    SELECT 1
+                    FROM INFORMATION_SCHEMA.TABLES
+                    WHERE TABLE_NAME = :table_name
+                """)
+                exists = conn.execute(exists_query, {"table_name": table_name}).scalar()
+                if not exists:
+                    return False
         engine.dispose()
         return True
     except Exception:

@@ -6,8 +6,8 @@ class Settings(BaseSettings):
     env: str = "production"
     database_url: str = ""
     db_auto_discovery_enabled: bool = True
-    db_auto_hosts: str = "localhost,127.0.0.1,.\SQLEXPRESS"
-    db_auto_databases: str = "SistemaMedico,master"
+    db_auto_hosts: str = r"localhost,127.0.0.1,.\SQLEXPRESS"
+    db_auto_databases: str = "SistemaMedico"
     db_auto_try_trusted: bool = True
     db_auto_usernames: str = "sa"
     db_auto_passwords: str = "YourStrong!Passw0rd"

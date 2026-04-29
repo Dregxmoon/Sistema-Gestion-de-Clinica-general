@@ -94,7 +94,7 @@ Variables clave:
 - `DATABASE_URL` (opcional; si no se define, se intenta autodetección local de SQL Server)
 - `DB_AUTO_DISCOVERY_ENABLED` (default: `true`)
 - `DB_AUTO_HOSTS` (default: `localhost,127.0.0.1,.\SQLEXPRESS`)
-- `DB_AUTO_DATABASES` (default: `SistemaMedico,master`)
+- `DB_AUTO_DATABASES` (default: `SistemaMedico`)
 - `DB_AUTO_TRY_TRUSTED` (default: `true`)
 - `DB_AUTO_USERNAMES` (default: `sa`)
 - `DB_AUTO_PASSWORDS` (default: `YourStrong!Passw0rd`)
