@@ -32,3 +32,16 @@ class AlertRequest(BaseModel):
         if len(set(values)) != len(values):
             raise ValueError("related_symptoms contiene IDs duplicados")
         return values
+
+
+class AlertaPredictiva(BaseModel):
+    patron_id: int
+    nombre_patron: str
+    enfermedad_probable: str
+    nivel_alerta: str
+    coincidencias: int
+
+
+class PredictiveResponse(BaseModel):
+    paciente_id: int
+    alertas: list[AlertaPredictiva]

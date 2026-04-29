@@ -3,6 +3,7 @@ from datetime import datetime, timezone
 
 from app.repositories.consultas_repository import ConsultasRepository
 from app.schemas.alerts import AlertaEvolucionPatologica
+from app.schemas.alerts import AlertaPredictiva
 
 
 class TrendDetectionService:
@@ -40,3 +41,33 @@ class TrendDetectionService:
             nivel_alerta=nivel,
             timestamp_utc=datetime.now(timezone.utc),
         )
+
+    def detectar_alertas_predictivas(self, paciente_id: int) -> list[AlertaPredictiva]:
+        patrones = self.repository.get_patrones_riesgo()
+        alertas: list[AlertaPredictiva] = []
+
+        for patron in patrones:
+            related_symptoms = [int(value.strip()) for value in patron.sintomas_ids.split(",") if value.strip().isdigit()]
+            if not related_symptoms:
+                continue
+
+            rows = self.repository.get_related_visits(
+                paciente_id=paciente_id,
+                related_symptoms=related_symptoms,
+                window_days=patron.ventana_dias,
+            )
+            coincidencias = len(rows)
+            if coincidencias < patron.frecuencia_umbral:
+                continue
+
+            alertas.append(
+                AlertaPredictiva(
+                    patron_id=patron.id_patron,
+                    nombre_patron=patron.nombre_patron,
+                    enfermedad_probable=patron.enfermedad_probable,
+                    nivel_alerta=patron.nivel_alerta,
+                    coincidencias=coincidencias,
+                )
+            )
+
+        return alertas
