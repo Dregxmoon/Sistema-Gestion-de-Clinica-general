@@ -133,6 +133,9 @@ uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 - `GET /health` → estado de servicio.
 - `POST /api/v1/alertas/evolucion-patologica` → alerta por hiper-frecuentación.
 - `GET /api/v1/alertas/predictiva/{paciente_id}` → alertas predictivas por paciente.
+- `GET /api/v1/pacientes` → listado clínico de pacientes para operación y triaje.
+- `GET /api/v1/sintomas?categoria=Respiratorio` → catálogo de síntomas configurable por categoría.
+- `GET /api/v1/expediente/{paciente_id}` → expediente clínico resumido con consultas y síntomas.
 
 ## Base de datos
 
@@ -161,3 +164,16 @@ uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 - Luka Torres
 - Supervisora: Dra. Martha Elena Pulido
 - Instituto Tecnológico de Tijuana
+
+
+## Integración real con SQL Server
+
+La API ya consume información clínica real de SQL Server (pacientes, consultas, síntomas y patrones de riesgo) usando SQLAlchemy sobre `mssql+pyodbc`.
+
+Cadena recomendada para ambiente local:
+
+```env
+DATABASE_URL=mssql+pyodbc://sa:YourStrong!Passw0rd@localhost/SistemaMedico?driver=ODBC+Driver+18+for+SQL+Server&TrustServerCertificate=yes
+```
+
+Para ambientes corporativos, usa usuario técnico dedicado, TLS válido y segmentación de red.
