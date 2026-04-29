@@ -4,7 +4,13 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     app_name: str = "SistemaMedico API"
     env: str = "production"
-    database_url: str = "mssql+pyodbc://sa:YourStrong!Passw0rd@localhost/SistemaMedico?driver=ODBC+Driver+18+for+SQL+Server&TrustServerCertificate=yes"
+    database_url: str = ""
+    db_auto_discovery_enabled: bool = True
+    db_auto_hosts: str = r"localhost,127.0.0.1,.\SQLEXPRESS"
+    db_auto_databases: str = "SistemaMedico"
+    db_auto_try_trusted: bool = True
+    db_auto_usernames: str = "sa"
+    db_auto_passwords: str = "YourStrong!Passw0rd"
     alert_window_days: int = 30
     alert_visit_threshold: int = 3
 

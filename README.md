@@ -91,7 +91,13 @@ Variables clave:
 
 - `APP_NAME` (default: `SistemaMedico API`)
 - `ENV` (default: `production`)
-- `DATABASE_URL` (cadena SQLAlchemy + pyodbc)
+- `DATABASE_URL` (opcional; si no se define, se intenta autodetección local de SQL Server)
+- `DB_AUTO_DISCOVERY_ENABLED` (default: `true`)
+- `DB_AUTO_HOSTS` (default: `localhost,127.0.0.1,.\SQLEXPRESS`)
+- `DB_AUTO_DATABASES` (default: `SistemaMedico`)
+- `DB_AUTO_TRY_TRUSTED` (default: `true`)
+- `DB_AUTO_USERNAMES` (default: `sa`)
+- `DB_AUTO_PASSWORDS` (default: `YourStrong!Passw0rd`)
 - `ALERT_WINDOW_DAYS` (default: `30`)
 - `ALERT_VISIT_THRESHOLD` (default: `3`)
 
@@ -100,7 +106,17 @@ Ejemplo de `.env`:
 ```env
 APP_NAME=SistemaMedico API
 ENV=development
-DATABASE_URL=mssql+pyodbc://sa:YourStrong!Passw0rd@localhost/SistemaMedico?driver=ODBC+Driver+18+for+SQL+Server&TrustServerCertificate=yes
+# Opción A (recomendada): dejar sin DATABASE_URL para autodetección local
+DB_AUTO_DISCOVERY_ENABLED=true
+DB_AUTO_HOSTS=localhost,127.0.0.1,.\SQLEXPRESS
+DB_AUTO_DATABASES=SistemaMedico
+DB_AUTO_TRY_TRUSTED=true
+DB_AUTO_USERNAMES=sa
+DB_AUTO_PASSWORDS=YourStrong!Passw0rd
+
+# Opción B: URL fija
+# DATABASE_URL=mssql+pyodbc://sa:YourStrong!Passw0rd@localhost/SistemaMedico?driver=ODBC+Driver+18+for+SQL+Server&TrustServerCertificate=yes
+
 ALERT_WINDOW_DAYS=30
 ALERT_VISIT_THRESHOLD=3
 ```
