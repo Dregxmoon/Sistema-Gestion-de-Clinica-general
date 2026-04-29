@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from sqlalchemy import Select, select
 from sqlalchemy.orm import Session
 
-from app.models.clinical import Consulta, ConsultaSintoma, SintomaCatalogo
+from app.models.clinical import Consulta, ConsultaSintoma, PatronRiesgo, SintomaCatalogo
 
 
 class ConsultasRepository:
@@ -23,3 +23,7 @@ class ConsultasRepository:
             )
         )
         return list(self.db.execute(stmt).all())
+
+    def get_patrones_riesgo(self) -> list[PatronRiesgo]:
+        stmt: Select = select(PatronRiesgo)
+        return list(self.db.scalars(stmt).all())

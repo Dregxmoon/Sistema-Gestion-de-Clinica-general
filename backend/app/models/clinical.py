@@ -33,6 +33,7 @@ class ConsultaSintoma(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     id_consulta: Mapped[int] = mapped_column(ForeignKey("consultas.id_consulta"), index=True)
     id_sintoma: Mapped[int] = mapped_column(ForeignKey("sintomas_catalogo.id_sintoma"), index=True)
+    intensidad: Mapped[str] = mapped_column(String(10), default="leve")
 
     consulta: Mapped[Consulta] = relationship(back_populates="sintomas")
 
@@ -43,3 +44,15 @@ class SintomaCatalogo(Base):
     id_sintoma: Mapped[int] = mapped_column(Integer, primary_key=True)
     nombre_sintoma: Mapped[str] = mapped_column(String(100))
     categoria: Mapped[str] = mapped_column(String(50))
+
+
+class PatronRiesgo(Base):
+    __tablename__ = "patrones_riesgo"
+
+    id_patron: Mapped[int] = mapped_column(Integer, primary_key=True)
+    nombre_patron: Mapped[str] = mapped_column(String(100))
+    sintomas_ids: Mapped[str] = mapped_column(String(500))
+    frecuencia_umbral: Mapped[int] = mapped_column(Integer)
+    ventana_dias: Mapped[int] = mapped_column(Integer)
+    enfermedad_probable: Mapped[str] = mapped_column(String(100))
+    nivel_alerta: Mapped[str] = mapped_column(String(15))
