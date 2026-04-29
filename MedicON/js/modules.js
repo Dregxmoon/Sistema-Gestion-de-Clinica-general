@@ -436,7 +436,7 @@ function renderPacientes() {
     p.telefono,
     `<span class="${p.sexo==='F'?'text-pink-600':'text-sky-600'} font-medium">${p.sexo==='F'?'Femenino':'Masculino'}</span>`,
     p.fecha_nac,
-    `<div class="flex gap-1">${btnEdit(`editPaciente(${p.id})`)}${btnDelete(`deletePaciente(${p.id})`)}<button class="btn-icon-sm text-violet-600 hover:bg-violet-50" onclick="verRiesgoPaciente(${p.id})" title="Perfil predictivo">🧠</button></div>`,
+    `<div class="flex gap-1"><button class="btn-icon-sm text-sky-600 hover:bg-sky-50" onclick="verHistorialPaciente(${p.id})" title="Ver historial clínico">📄</button>${btnEdit(`editPaciente(${p.id})`)}${btnDelete(`deletePaciente(${p.id})`)}<button class="btn-icon-sm text-violet-600 hover:bg-violet-50" onclick="verRiesgoPaciente(${p.id})" title="Perfil predictivo">🧠</button></div>`,
   ]);
   return sectionHeader("Pacientes","Registro de pacientes del sistema","Nuevo paciente","newPaciente()","🧑‍⚕️")
     + `<div class="mb-4 relative">
@@ -460,9 +460,10 @@ window.newPaciente = function() {
     const al = document.getElementById("p-alergias").value.trim();
     if (!n || !doc) return showToast("Nombre y documento son obligatorios","error");
     if (DB.pacientes.find(x=>x.documento===doc)) return showToast("Documento ya registrado","error");
-    DB.pacientes.push({id:DB.nextId.pacientes++, nombre:n, documento:doc, telefono:tel, sexo:sx, fecha_nac:fn, email:em, alergias:al, antecedentes:[], medicamentos:[], historial_consultas:[]});
+    const nuevoId = DB.nextId.pacientes++;
+    DB.pacientes.push({id:nuevoId, nombre:n, documento:doc, telefono:tel, sexo:sx, fecha_nac:fn, email:em, alergias:al, antecedentes:[], medicamentos:[], historial_consultas:[]});
     logAction(`Registró paciente: ${n}`);
-    closeModal(); navigate("pacientes"); showToast("Paciente registrado");
+    closeModal(); showToast("Paciente registrado. Continúa con la cita médica."); newCita({ paciente_id: nuevoId, fecha: today(0) });
   });
 };
 window.editPaciente = function(id) {
@@ -504,6 +505,23 @@ function formPaciente(p={}) {
 }
 
 
+
+
+window.verHistorialPaciente = function(id) {
+  const p = DB.pacientes.find(x=>x.id===id);
+  const citas = DB.citas.filter(c=>c.paciente_id===id).sort((a,b)=>(`${b.fecha} ${b.hora}`).localeCompare(`${a.fecha} ${a.hora}`));
+  const html = `<div class="space-y-4 text-sm">
+      <div class="grid md:grid-cols-2 gap-3">
+        <div><b>Paciente:</b> ${p.nombre}</div><div><b>Documento:</b> ${p.documento}</div>
+        <div><b>Teléfono:</b> ${p.telefono || "Sin registro"}</div><div><b>Email:</b> ${p.email || "Sin registro"}</div>
+        <div><b>Alergias:</b> ${p.alergias || "Sin alergias registradas"}</div><div><b>Antecedentes:</b> ${(p.antecedentes||[]).join(", ") || "Sin registro"}</div>
+      </div>
+      <div><b>Historial de citas médicas:</b><div class="mt-2 max-h-72 overflow-auto border border-slate-200 rounded-xl">
+        ${citas.length ? citas.map(c=>`<div class="p-3 border-b border-slate-100 last:border-b-0"><div class="flex items-center justify-between gap-2"><span class="font-medium">${c.fecha} ${c.hora}</span>${estadoBadge(c.estado)}</div><p class="text-slate-600 mt-1"><b>Motivo:</b> ${c.motivo || "Sin registro"}</p><p class="text-slate-600"><b>Médico:</b> ${getMedicoNombre(c.medico_id)}</p><p class="text-slate-600"><b>Síntomas:</b> ${(c.sintomas_ids||[]).map(sid=>DB.sintomas_catalogo.find(s=>s.id===sid)?.nombre).filter(Boolean).join(", ") || "Sin registro"}</p><p class="text-slate-600"><b>Tratamiento/Notas:</b> ${c.tratamiento || c.notas_medicas || "Sin registro"}</p></div>`).join("") : `<p class="p-3 text-slate-500">Sin citas registradas.</p>`}
+      </div></div>
+    </div>`;
+  openModal("Expediente clínico del paciente", html, () => closeModal());
+};
 
 window.verRiesgoPaciente = function(id) {
   const p = DB.pacientes.find(x=>x.id===id);
@@ -596,11 +614,11 @@ function citaCard(c) {
           </div>
           <div class="flex items-center gap-2 flex-shrink-0">
             ${estadoBadge(c.estado)}
-            ${c.estado === "PENDIENTE" ? `
-              <button onclick="finalizarCita(${c.id})" class="btn-icon-sm text-emerald-600 hover:bg-emerald-50" title="Finalizar">✓</button>
+            ${c.estado === "PENDIENTE" && DB.currentUser?.rol !== "RECEPCION" ? `
+              <button onclick="finalizarCita(${c.id})" class="btn-icon-sm text-emerald-600 hover:bg-emerald-50" title="Atender y finalizar">✓</button>
               <button onclick="cancelarCita(${c.id})"  class="btn-icon-sm text-red-500 hover:bg-red-50" title="Cancelar">✕</button>
             ` : ""}
-            ${btnEdit(`editCita(${c.id})`)}
+            ${DB.currentUser?.rol !== "MEDICO" ? btnEdit(`editCita(${c.id})`) : ""}
           </div>
         </div>
       </div>
@@ -614,6 +632,7 @@ window.cambiarFecha = function(offset) {
   renderPage("citas");
 };
 window.finalizarCita = function(id) {
+  if (DB.currentUser?.rol === "RECEPCION") return showToast("La secretaría solo puede registrar citas","error");
   const c = DB.citas.find(x=>x.id===id);
   const paciente = DB.pacientes.find(p=>p.id===c.paciente_id);
   openModal("Consulta médica", formConsultaMedica(c, paciente), () => {
@@ -622,10 +641,19 @@ window.finalizarCita = function(id) {
     const duracion = document.getElementById("cm-duracion").value.trim();
     const alergias = document.getElementById("cm-alergias").value.trim();
     const antecedentes = document.getElementById("cm-antecedentes").value.trim();
+    const signos = document.getElementById("cm-signos").value.trim();
+    const diagnostico = document.getElementById("cm-diagnostico").value.trim();
+    const tratamiento = document.getElementById("cm-tratamiento").value.trim();
     const notas = document.getElementById("cm-notas").value.trim();
-    if (!sintomasIds.length) return showToast("Selecciona al menos un síntoma","error");
+    if (!sintomasIds.length || !diagnostico || !tratamiento) return showToast("Captura síntomas, diagnóstico y tratamiento","error");
 
     c.sintomas_ids = sintomasIds;
+    c.alergias = alergias;
+    c.antecedentes = antecedentes;
+    c.signos_vitales = signos;
+    c.diagnostico = diagnostico;
+    c.tratamiento = tratamiento;
+    c.notas_medicas = notas;
     c.estado = "FINALIZADA";
     paciente.alergias = alergias;
     if (antecedentes) paciente.antecedentes = antecedentes.split(",").map(x=>x.trim()).filter(Boolean);
@@ -637,6 +665,8 @@ window.finalizarCita = function(id) {
       sintomas_texto: sintomasIds.map(id => DB.sintomas_catalogo.find(s=>s.id===id)?.nombre).filter(Boolean).join(", "),
       fecha_inicio: fechaInicio,
       duracion,
+      diagnostico,
+      tratamiento,
       notas,
       medico: getMedicoNombre(c.medico_id),
     });
@@ -657,6 +687,9 @@ function formConsultaMedica(c, paciente) {
     </div>
     ${field("Alergias", textarea("cm-alergias","Ej. penicilina, ibuprofeno", paciente.alergias||""))}
     ${field("Antecedentes relevantes", textarea("cm-antecedentes","Separar por comas", (paciente.antecedentes||[]).join(", ")))}
+    ${field("Signos vitales", textarea("cm-signos","TA, FC, FR, Temp, SpO2", c.signos_vitales||""))}
+    ${field("Impresión diagnóstica", textarea("cm-diagnostico","Diagnóstico principal y diferenciales", c.diagnostico||""), true)}
+    ${field("Tratamiento / receta", textarea("cm-tratamiento","Medicamentos, dosis e indicaciones", c.tratamiento||""), true)}
     ${field("Nota médica / plan", textarea("cm-notas","Evolución, impresión diagnóstica, indicaciones", ""))}
   </div>`;
 }
@@ -667,8 +700,8 @@ window.cancelarCita = function(id) {
     renderPage("citas"); showToast("Cita cancelada","info");
   });
 };
-window.newCita = function() {
-  openModal("Nueva cita", formCita(), () => {
+window.newCita = function(c={}) {
+  openModal("Nueva cita", formCita(c), () => {
     const pid = parseInt(document.getElementById("c-pac").value);
     const mid = parseInt(document.getElementById("c-med").value);
     const f   = document.getElementById("c-fecha").value;
